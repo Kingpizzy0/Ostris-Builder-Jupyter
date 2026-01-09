@@ -1,17 +1,16 @@
-### **3. Dockerfile B: Blackwell GPU (PyTorch 2.9 / CUDA 12.8)**
-
-```dockerfile
-# Base image with CUDA 12.8 (Available in Jan 2026 context)
-FROM nvidia/cuda:12.8.0-devel-ubuntu22.04
+# Base image with CUDA 12.8 (for Blackwell GPUs)
+# Note: As of Jan 2026, CUDA 12.8 may not be released yet
+# You may need to use cuda:12.4.1 or cuda:12.6 depending on availability
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 
 # Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install System Dependencies & Python 3.12 (Newer python for newer PyTorch)
+# Install System Dependencies & Python 3.11 (3.12 might not have all packages yet)
 RUN apt-get update && apt-get install -y \
-    python3.12 \
-    python3.12-dev \
-    python3.12-venv \
+    python3.11 \
+    python3.11-dev \
+    python3.11-venv \
     python3-pip \
     git \
     curl \
@@ -19,37 +18,60 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libgl1 \
     libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Set Python 3.12 as default
-RUN ln -s /usr/bin/python3.12 /usr/bin/python
+# Set Python 3.11 as default
+RUN ln -s /usr/bin/python3.11 /usr/bin/python
 
-# Install Node.js
+# Install Node.js 22.x
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
-    apt-get install -y nodejs
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
 
-# Install PyTorch 2.9 specific version (Assuming cuda 12.8 wheel exists)
-RUN pip install --no-cache-dir torch==2.9.0 torchvision==0.24.0 torchaudio==2.9.0 --index-url https://download.pytorch.org/whl/cu128
+# Install latest stable PyTorch with CUDA 12.4 support
+# Note: PyTorch 2.9 is not released yet as of Jan 2026
+# Using latest available stable version
+RUN pip install --no-cache-dir \
+    torch \
+    torchvision \
+    torchaudio \
+    --index-url https://download.pytorch.org/whl/cu124 \
+    && pip cache purge \
+    && rm -rf /root/.cache/pip
 
 # Install Jupyter Lab
-RUN pip install --no-cache-dir jupyterlab
+RUN pip install --no-cache-dir jupyterlab \
+    && pip cache purge \
+    && rm -rf /root/.cache/pip
 
 # Clone and Setup AI Toolkit
 WORKDIR /app
 RUN git clone https://github.com/ostris/ai-toolkit.git
+
 WORKDIR /app/ai-toolkit
 
 # Install AI Toolkit Python Requirements
-RUN pip install --no-cache-dir -r requirements.txt --ignore-installed torch torchvision torchaudio
+RUN pip install --no-cache-dir -r requirements.txt \
+    --ignore-installed torch torchvision torchaudio \
+    && pip cache purge \
+    && rm -rf /root/.cache/pip
 
 # Setup AI Toolkit UI
 WORKDIR /app/ai-toolkit/ui
-RUN npm install
-RUN npm run build
+
+RUN npm install && \
+    npm run build && \
+    npm cache clean --force && \
+    rm -rf /root/.npm
 
 # Copy Start Script
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
+
+# Set working directory back to ai-toolkit
+WORKDIR /app/ai-toolkit
 
 # Expose Ports
 EXPOSE 8888 8675
