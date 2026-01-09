@@ -6,7 +6,7 @@ set -e
 echo "=== Starting RunPod Container Services ==="
 
 # 1. Set up Jupyter Lab
-JUPYTER_PWD=${JUPYTER_PASSWORD:-runpod}
+JUPYTER_PWD=${JUPYTER_PASSWORD:-Password}
 
 echo "Starting Jupyter Lab on port 8888..."
 
@@ -48,3 +48,4 @@ cd /app/ai-toolkit/ui
 # Start the UI server in foreground (keeps container running)
 echo "✓ AI Toolkit UI starting..."
 exec npm run start -- --host 0.0.0.0 --port 8675
+
