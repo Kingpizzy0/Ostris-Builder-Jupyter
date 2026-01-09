@@ -1,5 +1,5 @@
-# Base image with CUDA 12.4.1 for older GPUs
-FROM nvidia/cuda:12.4.1-devel-ubuntu24.04
+# Base image with CUDA 12.8.1 for older GPUs
+FROM nvidia/cuda:12.8.1-devel-ubuntu24.04
 
 LABEL authors="runpod-ostris-basic"
 
@@ -7,7 +7,7 @@ LABEL authors="runpod-ostris-basic"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # CUDA architecture list for compatibility
-ENV TORCH_CUDA_ARCH_LIST="7.0 7.5 8.0 8.6 8.9 9.0"
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9 9.0 10.0 12.0"
 
 # Install dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -49,7 +49,7 @@ WORKDIR /app
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Install PyTorch 2.4.0 for CUDA 12.4 before cache bust
-RUN pip install --no-cache-dir torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 \
+RUN pip install --no-cache-dir torch==2.9.1 torchvision==0.24.1 torchaudio==2.9.1 \
     --index-url https://download.pytorch.org/whl/cu124 --break-system-packages
 
 # Install JupyterLab
