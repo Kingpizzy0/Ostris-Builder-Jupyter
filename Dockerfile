@@ -14,6 +14,7 @@ ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9 9.0 10.0 12.0"
 # Default ports (can be overridden)
 ENV JUPYTER_PORT=8888
 ENV AI_TOOLKIT_PORT=8675
+ENV COMFYUI_PORT=8188
 
 # Install dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -75,14 +76,20 @@ WORKDIR /app/ai-toolkit
 RUN pip install --no-cache-dir --break-system-packages -r requirements.txt && \
     pip install setuptools==69.5.1 --no-cache-dir --break-system-packages
 
+# Clone and setup ComfyUI
+WORKDIR /app
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
+    cd ComfyUI && \
+    pip install --no-cache-dir --break-system-packages -r requirements.txt
+
 # Build UI
 WORKDIR /app/ai-toolkit/ui
 RUN npm install && \
     npm run build && \
     npm run update_db
 
-# Expose ports for Jupyter Lab and AI Toolkit
-EXPOSE 8888 8675
+# Expose ports for Jupyter Lab, AI Toolkit, and ComfyUI
+EXPOSE 8888 8675 8188
 
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
