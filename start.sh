@@ -53,7 +53,52 @@ else
     exit 1
 fi
 
-# 2. Start ComfyUI
+# 2. Download Z-Image Turbo models if not present
+echo "[INFO] Checking for Z-Image Turbo models..."
+cd /app/ComfyUI
+
+DIFFUSION_MODEL="models/diffusion_models/z_image_turbo_bf16.safetensors"
+TEXT_ENCODER="models/text_encoders/qwen_3_4b.safetensors"
+VAE_MODEL="models/vae/ae.safetensors"
+
+download_model() {
+    local url=$1
+    local output=$2
+    local name=$3
+    
+    if [ ! -f "$output" ]; then
+        echo "[INFO] Downloading $name..."
+        wget -c "$url" -O "$output"
+        if [ $? -eq 0 ]; then
+            echo "[OK] $name downloaded successfully"
+        else
+            echo "[ERROR] Failed to download $name"
+            return 1
+        fi
+    else
+        echo "[OK] $name already exists, skipping download"
+    fi
+}
+
+# Download models if missing
+download_model \
+    "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/diffusion_models/z_image_turbo_bf16.safetensors" \
+    "$DIFFUSION_MODEL" \
+    "Z-Image Turbo Diffusion Model"
+
+download_model \
+    "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/text_encoders/qwen_3_4b.safetensors" \
+    "$TEXT_ENCODER" \
+    "Z-Image Turbo Text Encoder"
+
+download_model \
+    "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors" \
+    "$VAE_MODEL" \
+    "Z-Image Turbo VAE"
+
+echo "[OK] All Z-Image Turbo models ready"
+
+# 3. Start ComfyUI
 echo "[INFO] Starting ComfyUI on port $COMFYUI_PORT..."
 cd /app/ComfyUI
 
@@ -71,7 +116,7 @@ else
     exit 1
 fi
 
-# 3. Start Ostris AI Toolkit UI
+# 4. Start Ostris AI Toolkit UI
 echo "[INFO] Starting AI Toolkit UI on port $AI_TOOLKIT_PORT..."
 cd /app/ai-toolkit/ui
 
