@@ -1,13 +1,19 @@
-# Base image with CUDA 12.8.1 for older GPUs
+# Jupyter Toolkit Lab - Unified Docker Image
 FROM nvidia/cuda:12.8.1-devel-ubuntu24.04
 
-LABEL authors="runpod-ostris-basic"
+LABEL maintainer="jupyter-toolkit-lab"
+LABEL description="Jupyter Toolkit Lab - AI Development Environment for GPU Cloud Services"
+LABEL version="1.0"
 
 # Set noninteractive to avoid timezone prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# CUDA architecture list for compatibility
+# CUDA architecture list for broad GPU compatibility (including Blackwell)
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.9 9.0 10.0 12.0"
+
+# Default ports (can be overridden)
+ENV JUPYTER_PORT=8888
+ENV AI_TOOLKIT_PORT=8675
 
 # Install dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -48,14 +54,14 @@ WORKDIR /app
 # Set aliases for python and pip
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-# Install PyTorch 2.9.1 for CUDA 12.4 before cache bust
+# Install PyTorch 2.9.1 with CUDA 12.8 support before cache bust
 RUN pip install --no-cache-dir torch==2.9.1 torchvision==0.24.1 torchaudio==2.9.1 \
     --index-url https://download.pytorch.org/whl/cu128 --break-system-packages
 
 # Install JupyterLab
 RUN pip install --no-cache-dir jupyterlab --break-system-packages
 
-# Fix cache busting by moving CACHEBUST to right before git clone
+# Cache busting for git clone
 ARG CACHEBUST=1234
 ARG GIT_COMMIT=main
 RUN echo "Cache bust: ${CACHEBUST}" && \
@@ -77,6 +83,10 @@ RUN npm install && \
 
 # Expose ports for Jupyter Lab and AI Toolkit
 EXPOSE 8888 8675
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:${AI_TOOLKIT_PORT}/ || exit 1
 
 WORKDIR /
 
