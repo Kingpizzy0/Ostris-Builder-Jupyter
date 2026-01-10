@@ -6,6 +6,7 @@ A unified Docker container template for AI development on GPU cloud services lik
 
 - **JupyterLab**: Full-featured data science notebook environment
 - **Ostris AI Toolkit**: Advanced AI training and development tools with web UI
+- **ComfyUI**: Powerful node-based UI for Stable Diffusion workflows
 - **CUDA 12.8.1**: Latest CUDA support for optimal GPU performance
 - **PyTorch 2.9.1**: Pre-installed with CUDA acceleration
 - **Broad GPU Support**: Compatible with architectures from Ampere to Blackwell (compute capability 8.0-12.0)
@@ -23,18 +24,18 @@ A unified Docker container template for AI development on GPU cloud services lik
 
 1. Go to RunPod.io and create a new template
 2. Use this Docker image: `keganrogue/jupyter-toolkit-lab:latest`
-3. Expose ports: `8888, 8675`
+3. Expose ports: `8888, 8675, 8188`
 4. Set environment variables (optional):
-   - `JUPYTER_PASSWORD`: Your JupyterLab password (default: "Password")
    - `JUPYTER_PORT`: JupyterLab port (default: 8888)
    - `AI_TOOLKIT_PORT`: AI Toolkit UI port (default: 8675)
+   - `COMFYUI_PORT`: ComfyUI port (default: 8188)
 5. Deploy your pod
 
 ### Using on Vast.ai
 
 1. Search for an instance with your desired GPU
 2. Use the Docker image: `keganrogue/jupyter-toolkit-lab:latest`
-3. Map ports `8888` and `8675`
+3. Map ports `8888`, `8675`, and `8188`
 4. Launch your instance
 
 ## Accessing Services
@@ -42,15 +43,19 @@ A unified Docker container template for AI development on GPU cloud services lik
 Once your container is running:
 
 - **JupyterLab**: `http://your-instance-ip:8888`
-  - Default password: `Password` (or your custom `JUPYTER_PASSWORD`)
+  - No password required - direct access
+  
+- **ComfyUI**: `http://your-instance-ip:8188`
+  - Node-based interface for Stable Diffusion workflows
   
 - **AI Toolkit UI**: `http://your-instance-ip:8675`
+  - Advanced AI training tools
 
 ## Building Locally
 
 ```bash
 # Clone the repository
-git clone https://github.com/keganrogue/jupyter-toolkit-lab.git
+git clone https://github.com/yourusername/jupyter-toolkit-lab.git
 cd jupyter-toolkit-lab
 
 # Build the image
@@ -60,7 +65,7 @@ docker build -t jupyter-toolkit-lab:latest .
 docker run -d \
   -p 8888:8888 \
   -p 8675:8675 \
-  -e JUPYTER_PASSWORD="YourSecurePassword" \
+  -p 8188:8188 \
   --gpus all \
   jupyter-toolkit-lab:latest
 ```
@@ -69,15 +74,16 @@ docker run -d \
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `JUPYTER_PASSWORD` | `Password` | Password for JupyterLab access |
 | `JUPYTER_PORT` | `8888` | Port for JupyterLab interface |
 | `AI_TOOLKIT_PORT` | `8675` | Port for AI Toolkit UI |
+| `COMFYUI_PORT` | `8188` | Port for ComfyUI interface |
 | `GIT_COMMIT` | `main` | AI Toolkit git commit/branch to clone |
 
 ## Logs
 
 Container logs are stored in `/var/log/`:
 - JupyterLab: `/var/log/jupyter.log`
+- ComfyUI: `/var/log/comfyui.log`
 
 ## Advanced Usage
 
@@ -99,6 +105,7 @@ Mount volumes for persistent data:
 docker run -d \
   -p 8888:8888 \
   -p 8675:8675 \
+  -p 8188:8188 \
   -v /path/to/notebooks:/workspace \
   -v /path/to/models:/models \
   --gpus all \
@@ -112,6 +119,9 @@ Check the logs: `docker logs <container-id>` or view `/var/log/jupyter.log`
 
 ### AI Toolkit UI not accessible
 Ensure port 8675 is properly exposed and not blocked by firewall
+
+### ComfyUI not accessible
+Ensure port 8188 is properly exposed and not blocked by firewall
 
 ### GPU not detected
 Verify NVIDIA Docker runtime is installed: `docker run --rm --gpus all nvidia/cuda:12.8.1-base-ubuntu24.04 nvidia-smi`
@@ -127,6 +137,6 @@ This project builds upon the Ostris AI Toolkit. Please refer to the original pro
 ## Acknowledgments
 
 - [Ostris AI Toolkit](https://github.com/ostris/ai-toolkit)
+- [ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 - NVIDIA CUDA Toolkit
 - JupyterLab Project
-
