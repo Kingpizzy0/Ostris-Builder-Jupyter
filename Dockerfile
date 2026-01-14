@@ -82,6 +82,12 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
     cd ComfyUI && \
     pip install --no-cache-dir --break-system-packages -r requirements.txt
 
+# Install ComfyUI Manager
+WORKDIR /app/ComfyUI/custom_nodes
+RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git && \
+    cd ComfyUI-Manager && \
+    pip install --no-cache-dir --break-system-packages -r requirements.txt
+
 # Create model directories for ComfyUI (models will be downloaded on first start)
 WORKDIR /app/ComfyUI
 RUN mkdir -p models/diffusion_models models/text_encoders models/vae
